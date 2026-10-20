@@ -1,0 +1,15 @@
+# Archivos temporales de RStudio y R
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Salidas: cada integrante las regenera corriendo 00_master.R
+salidas/*
+!salidas/.gitkeep
+
+# Archivos del sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+~$*
