@@ -46,5 +46,6 @@ cat("Carpeta raiz del proyecto:", here(), "\n\n")
 
 source(here("R", "01_datos.R"))       # carga la base y verifica que sea la correcta
 source(here("R", "02_validacion.R"))  # escalera de validacion (Fase 1)
+source(here("R", "03_tabla4.R"))      # Tabla IV de Mroz (MCO y MC2E)
 
 cat("\n>>> Master terminado sin errores.\n")
