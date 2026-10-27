@@ -1,6 +1,6 @@
 # =============================================================================
 # 05_tabla6.R  —  Tabla VI de Mroz (1987): endogeneidad del salario
-# Autora: Judith (codigo) · Experta del bloque: Melany
+# Autora: Judith (codigo) · Bloque del integrante 3
 # -----------------------------------------------------------------------------
 # Que hace:
 #   Seis especificaciones de la ecuacion de horas (todas con los instrumentos

@@ -1,7 +1,7 @@
 # =============================================================================
 # 07_seleccion_multietapa.R  —  Tablas IX y X (especificaciones 3 y 5) y
 #                               Tabla XI (filas 3 y 5) de Mroz (1987)
-# Autora: Judith (codigo) · Experta del bloque: Yamile
+# Autora: Judith (codigo) · Bloque del integrante 4
 # -----------------------------------------------------------------------------
 # PROBLEMA: las Tablas IV a VIII usan solo a las 428 que trabajan. Si quienes
 # trabajan no son una muestra al azar, esas estimaciones pueden estar sesgadas

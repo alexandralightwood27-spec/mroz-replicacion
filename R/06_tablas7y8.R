@@ -1,7 +1,7 @@
 # =============================================================================
 # 06_tablas7y8.R  —  Tablas VII y VIII de Mroz (1987)
 #                    Exogeneidad del ingreso no laboral y de los hijos
-# Autora: Judith (codigo) · Experta del bloque: Melany
+# Autora: Judith (codigo) · Bloque del integrante 3
 # -----------------------------------------------------------------------------
 # PREGUNTA: el ingreso no laboral (I) y los hijos (C) se tratan como exogenos
 # en la ecuacion de horas. ¿Es valido? Podrian no serlo: una mujer con "gusto

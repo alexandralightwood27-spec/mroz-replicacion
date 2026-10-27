@@ -3,7 +3,7 @@
 #   Tablas IX y X, especificaciones 1 (Tobit) y 2 (Tobit condicional),
 #   sus diferencias, Tabla XI filas 1 y 2, y el experimento de la seccion 1.7
 #   (experiencia como regresor directo: el salario cae de 4.097 a 67).
-# Autora: Judith (codigo) · Experto del bloque: Max
+# Autora: Judith (codigo) · Bloque del integrante 5
 # -----------------------------------------------------------------------------
 # EL MODELO (Heckman 1974; restricciones 1 a 3 del paper)
 #   Salario de mercado:  ln w  = c'Z1 + u2
