@@ -51,5 +51,6 @@ source(here("R", "04_tabla3.R"))      # Tabla III de Mroz (medias)
 source(here("R", "05_tabla6.R"))      # Tabla VI de Mroz (endogeneidad del salario)
 source(here("R", "06_tablas7y8.R"))   # Tablas VII y VIII (exogeneidad de ingreso e hijos)
 source(here("R", "07_seleccion_multietapa.R"))   # Tablas IX, X y XI (multietapa)
+source(here("R", "08_tobit.R"))                  # Tobit, Tabla XI y experimento 4.097 -> 67
 
 cat("\n>>> Master terminado sin errores.\n")
