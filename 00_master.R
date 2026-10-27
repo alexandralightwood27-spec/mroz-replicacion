@@ -25,7 +25,7 @@
 # Puede tardar 10-20 minutos la primera vez. Es normal.
 
 # paquetes <- c("here", "wooldridge", "dplyr", "AER", "sampleSelection",
-#               "censReg", "truncreg", "sandwich", "lmtest", "modelsummary")
+#               "censReg", "truncreg", "sandwich", "lmtest", "modelsummary", "maxLik")
 # install.packages(paquetes)
 
 
