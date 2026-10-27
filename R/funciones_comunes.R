@@ -92,7 +92,10 @@ piezas_iv <- function(m) {
   if (inherits(m, "ivreg")) {
     X <- model.matrix(m, component = "regressors")
     Z <- model.matrix(m, component = "instruments")
-    Xh <- Z %*% solve(crossprod(Z), crossprod(Z, X))   # proyeccion de X en Z
+    # Proyeccion de X en Z. Se usa la descomposicion QR en vez de invertir Z'Z:
+    # con polinomios de grado 3 las columnas de Z tienen escalas muy distintas
+    # (edad^3 ~ 100.000, city ~ 1) y la inversa directa es numericamente inestable.
+    Xh <- qr.fitted(qr(Z), X)
   } else {
     X <- model.matrix(m); Xh <- X
   }
