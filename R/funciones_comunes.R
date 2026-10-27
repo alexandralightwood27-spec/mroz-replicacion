@@ -15,9 +15,13 @@ library(lmtest)     # coeftest()
 # -----------------------------------------------------------------------------
 # 1. Submuestra de las que trabajan + terminos polinomicos
 # -----------------------------------------------------------------------------
-preparar_trab <- function(mroz) {
-  trab <- subset(mroz, inlf == 1)
-  within(trab, {
+preparar_trab <- function(mroz) subset(agregar_terminos(mroz), inlf == 1)
+
+# Agrega los terminos polinomicos a cualquier muestra (las 753 o las 428).
+# Los modelos de seleccion los necesitan para TODAS las mujeres, porque la
+# ecuacion de participacion se estima con las 753.
+agregar_terminos <- function(datos) {
+  within(datos, {
     # F2: cuadraticos en edad y educacion
     age2 <- age^2;  educ2 <- educ^2;  ageeduc <- age * educ
     # F3: cubicos
