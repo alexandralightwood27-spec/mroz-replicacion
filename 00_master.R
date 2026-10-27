@@ -48,5 +48,6 @@ source(here("R", "01_datos.R"))       # carga la base y verifica que sea la corr
 source(here("R", "02_validacion.R"))  # escalera de validacion (Fase 1)
 source(here("R", "03_tabla4.R"))      # Tabla IV de Mroz (MCO y MC2E)
 source(here("R", "04_tabla3.R"))      # Tabla III de Mroz (medias)
+source(here("R", "05_tabla6.R"))      # Tabla VI de Mroz (endogeneidad del salario)
 
 cat("\n>>> Master terminado sin errores.\n")
