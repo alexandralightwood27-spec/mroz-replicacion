@@ -43,11 +43,11 @@ m <- lapply(espec, function(s) estimar_horas(trab, inst = s[[1]], endog = s[[2]]
 m$VIII_1 <- m$VII_2; m$VIII_3 <- m$VII_1; m$VIII_5 <- m$VII_4
 
 fila <- function(mod) { x <- coef_robustos(mod); c(x$coef, se = x$se) }
-dif  <- function(a, b) { d <- contraste_diferencia(m[[a]], m[[b]]); c(d$dif, se = d$se) }
+dif  <- function(a, b) { d <- contraste_diferencia(m[[a]], m[[b]]); c(d$dif, se = d$se, wald = d$chi2) }
 
 armar <- function(nombres, pares, paper, rechaza_paper, titulo, archivo) {
-  est <- rbind(t(sapply(m[nombres], fila)),
-               t(sapply(pares, function(p) dif(p[1], p[2]))))
+  dd  <- t(sapply(pares, function(p) dif(p[1], p[2])))
+  est <- rbind(t(sapply(m[nombres], fila)), dd[, setdiff(colnames(dd), "wald")])
   rownames(est) <- c(nombres, names(pares))
   tab <- data.frame(
     especificacion = rownames(est),
@@ -64,14 +64,18 @@ armar <- function(nombres, pares, paper, rechaza_paper, titulo, archivo) {
 
   nd <- length(pares)
   z <- tail(est[, "lwage"] / est[, "se.lwage"], nd)
+  # Wald conjunto de los cuatro coeficientes (chi-cuadrado, 4 gl), al lado del z
+  w <- dd[, "wald"]
   decision <- data.frame(contraste = names(pares), z_lnw = round(z, 2),
                          rechaza_R = abs(z) > 1.96, rechaza_paper = rechaza_paper,
+                         wald = round(w, 2), p_wald = round(pchisq(w, 4, lower.tail = FALSE), 3),
                          row.names = NULL)
   cat("\nContrastes (|z| > 1.96 -> se rechaza al 5%):\n")
   print(decision)
 
   write.csv(tab, here::here("salidas", archivo), row.names = FALSE)
-  cat("Guardado en salidas/", archivo, "\n", sep = "")
+  write.csv(decision, here::here("salidas", sub(".csv", "_contrastes.csv", archivo, fixed = TRUE)), row.names = FALSE)
+  cat("Guardado en salidas/", archivo, " y su archivo de contrastes\n", sep = "")
   stopifnot(all(decision$rechaza_R == decision$rechaza_paper))
   cat("OK: las conclusiones de los", nd, "contrastes coinciden con el paper.\n")
 }

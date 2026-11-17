@@ -91,7 +91,52 @@ write.csv(pruebasS, here::here("salidas", "tabla4_sobreidentificacion.csv"), row
 cat("\nGuardado en salidas/tabla4_pruebasF.csv y salidas/tabla4_sobreidentificacion.csv\n")
 
 # -----------------------------------------------------------------------------
-# 3. Verificacion contra lo que dice el paper (p. 772)
+# 3. Instrumentos debiles (analisis adicional, NO esta en el paper)
+# -----------------------------------------------------------------------------
+# La literatura posterior a 1987 (Staiger y Stock, 1997) mide la fuerza de los
+# instrumentos con la F de los instrumentos EXCLUIDOS en la primera etapa (no
+# con el R2 completo, que incluye edad, educacion, hijos e ingreso). Regla
+# practica: F > 10. Si es menor, MC2E puede estar sesgado hacia MCO y sus
+# errores estandar no son confiables.
+# Para no depender de esa fuerza se usa la prueba de Anderson-Rubin (AR): para
+# cada valor a0, se regresa h - a0*ln(w) sobre todos los instrumentos y se
+# contrasta (con errores HC0) que los excluidos no la expliquen. El conjunto de
+# valores a0 que NO se rechazan al 5 % es un intervalo valido aunque los
+# instrumentos sean debiles. Si queda vacio, ningun valor de a0 es compatible
+# con los instrumentos: senal de que alguno es invalido.
+F_excluidos <- function(inst) {
+  r <- lm(reformulate(EXOG, "lwage"), data = trab)
+  u <- lm(reformulate(c(EXOG, inst), "lwage"), data = trab)
+  clasica <- anova(r, u)
+  robusta <- waldtest(r, u, vcov = vcovHC(u, type = "HC0"), test = "F")
+  c(F = clasica$F[2], p = clasica$`Pr(>F)`[2], F_robusta = robusta$F[2])
+}
+p_AR <- function(a0, inst) {
+  d <- transform(trab, y0 = hours - a0 * lwage)
+  r <- lm(reformulate(EXOG, "y0"), data = d)
+  u <- lm(reformulate(c(EXOG, inst), "y0"), data = d)
+  waldtest(r, u, vcov = vcovHC(u, type = "HC0"), test = "Chisq")$`Pr(>Chisq)`[2]
+}
+rejilla <- seq(-2000, 3000, by = 5)
+debiles <- do.call(rbind, lapply(c("2. E", "4. E,F3", "7. F2", "8. F3 (base)", "10. F4"), function(f) {
+  inst <- filas[[f]]
+  pa   <- sapply(rejilla, p_AR, inst = inst)
+  ok   <- rejilla[pa >= 0.05]
+  data.frame(fila = f, excluidos = length(inst), round(t(F_excluidos(inst)), 3),
+             p_AR_a0 = round(p_AR(0, inst), 3),
+             # en el borde de la rejilla = el conjunto no esta acotado (-Inf / Inf)
+             AR_inf = if (!length(ok)) NA else if (min(ok) == min(rejilla)) -Inf else min(ok),
+             AR_sup = if (!length(ok)) NA else if (max(ok) == max(rejilla)) Inf else max(ok),
+             row.names = NULL)
+}))
+cat("\n=========== TABLA IV, PRUEBA 3: fuerza de los instrumentos ===========\n")
+cat("(F de los excluidos en la primera etapa; conjunto de Anderson-Rubin al 95 %;\n")
+cat(" NA = conjunto vacio; -Inf o Inf = no acotado en la rejilla de -2000 a 3000)\n")
+print(debiles, row.names = FALSE)
+write.csv(debiles, here::here("salidas", "tabla4_instrumentos_debiles.csv"), row.names = FALSE)
+
+# -----------------------------------------------------------------------------
+# 4. Verificacion contra lo que dice el paper (p. 772)
 # -----------------------------------------------------------------------------
 #  - Las cinco pruebas F dan la misma decision que la nota 11.
 #  - "Sin la experiencia (filas 7 a 10) ninguna restriccion se rechaza al 5%".

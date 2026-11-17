@@ -54,8 +54,12 @@ res <- t(sapply(modelos, function(m) {
 pares <- list("3 - 2" = c(3, 2), "5 - 4" = c(5, 4), "6 - 5" = c(6, 5))
 difs <- t(sapply(pares, function(p) {
   d <- contraste_diferencia(modelos[[p[1]]], modelos[[p[2]]])
-  c(d$dif, se = d$se)
+  c(d$dif, se = d$se, wald = d$chi2)
 }))
+# Contraste de Wald conjunto de los cuatro coeficientes (chi-cuadrado con 4 gl).
+# El paper decide con el z del salario (p. 774); el conjunto se reporta al lado
+# porque reparte la prueba entre cuatro coeficientes y tiene menos potencia.
+p_wald <- pchisq(difs[, "wald"], df = 4, lower.tail = FALSE)
 
 # -----------------------------------------------------------------------------
 # 3. Comparacion con el paper (Tabla VI, p. 775)
@@ -72,7 +76,7 @@ paper <- rbind(
   c(-592,   2.4,   41,  -15,  247, 1.7,  64, 18)
 )
 
-todo <- rbind(res, difs)
+todo <- rbind(res, difs[, colnames(res)])
 tabla6 <- data.frame(
   especificacion = rownames(todo),
   lnw_R   = round(todo[, "lwage"]),    lnw_paper  = paper[, 1],
@@ -87,8 +91,11 @@ cat("\n=========== TABLA VI: R vs. paper ===========\n")
 print(tabla6)
 
 z <- difs[, "lwage"] / difs[, "se.lwage"]
-cat("\nEstadistico z de la diferencia en ln(w):\n")
-print(round(z, 2))
+cat("\nEstadistico z de la diferencia en ln(w) y Wald conjunto (4 gl):\n")
+contrastes6 <- data.frame(contraste = names(pares), z_lnw = round(z, 2),
+                          wald = round(difs[, "wald"], 2), p_wald = round(p_wald, 3),
+                          row.names = NULL)
+print(contrastes6)
 cat("|z| > 1.96 -> se rechaza la especificacion indicada al 5%.\n")
 cat("3 - 2: se rechaza que la experiencia sea exogena (Mroz: 3.0).\n")
 cat("5 - 4: se rechaza que el salario promedio no tenga error de medicion.\n")
@@ -96,7 +103,8 @@ cat("6 - 5: se rechaza que el salario de 1976 sea exogeno.\n")
 
 dir.create(here::here("salidas"), showWarnings = FALSE)
 write.csv(tabla6, here::here("salidas", "tabla6.csv"), row.names = FALSE)
-cat("\nGuardado en salidas/tabla6.csv\n")
+write.csv(contrastes6, here::here("salidas", "contrastes6.csv"), row.names = FALSE)
+cat("\nGuardado en salidas/tabla6.csv y salidas/contrastes6.csv\n")
 
 # -----------------------------------------------------------------------------
 # 4. Anclas: coeficiente y error estandar de ln(w) a 1 unidad del paper
