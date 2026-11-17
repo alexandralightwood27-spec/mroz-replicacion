@@ -14,19 +14,34 @@
 
 
 # -----------------------------------------------------------------------------
-# PASO 1. Instalar los paquetes (SOLO LA PRIMERA VEZ en cada computadora)
+# PASO 1. Instalar los paquetes que falten (automatico)
 # -----------------------------------------------------------------------------
 # Un "paquete" es codigo que otra gente escribio y regalo. R base no sabe
 # estimar un Heckman; el paquete sampleSelection si. Instalar = descargarlo a
 # tu disco (una sola vez). Cargar con library() = ponerlo sobre la mesa de
 # trabajo (cada vez que abres R).
 #
-# Quita el # de las tres lineas de abajo, corre, y vuelve a poner el #.
-# Puede tardar 10-20 minutos la primera vez. Es normal.
+# No hay que tocar nada: el script revisa que paquetes faltan en ESTA
+# computadora e instala solo esos. La primera vez puede tardar varios minutos
+# (necesita internet); las siguientes no instala nada y pasa de largo.
+#   here            -> rutas del proyecto        wooldridge -> la base mroz
+#   AER             -> ivreg() para MC2E         sandwich   -> errores robustos
+#   lmtest          -> coeftest()                maxLik     -> Tobit (script 08)
+#   sampleSelection -> heckit() de la validacion (script 02)
 
-# paquetes <- c("here", "wooldridge", "dplyr", "AER", "sampleSelection",
-#               "censReg", "truncreg", "sandwich", "lmtest", "modelsummary", "maxLik")
-# install.packages(paquetes)
+paquetes <- c("here", "wooldridge", "AER", "sandwich", "lmtest", "maxLik",
+              "sampleSelection")
+faltan <- paquetes[!sapply(paquetes, requireNamespace, quietly = TRUE)]
+if (length(faltan) > 0) {
+  cat("Instalando paquetes que faltan:", paste(faltan, collapse = ", "), "\n")
+  install.packages(faltan, repos = "https://cloud.r-project.org")
+}
+# Si alguno no se pudo instalar, se avisa aqui y no a mitad del trabajo.
+faltan <- paquetes[!sapply(paquetes, requireNamespace, quietly = TRUE)]
+if (length(faltan) > 0) {
+  stop("No se pudieron instalar: ", paste(faltan, collapse = ", "),
+       ". Revisa la conexion a internet y vuelve a correr el master.")
+}
 
 
 # -----------------------------------------------------------------------------
@@ -52,5 +67,7 @@ source(here("R", "05_tabla6.R"))      # Tabla VI de Mroz (endogeneidad del salar
 source(here("R", "06_tablas7y8.R"))   # Tablas VII y VIII (exogeneidad de ingreso e hijos)
 source(here("R", "07_seleccion_multietapa.R"))   # Tablas IX, X y XI (multietapa)
 source(here("R", "08_tobit.R"))                  # Tobit, Tabla XI y experimento 4.097 -> 67
+source(here("R", "09_tabla4_pruebas.R"))         # Tabla IV: pruebas F y de sobreidentificacion
+source(here("R", "10_tabla12.R"))                # Tabla XII (exogeneidad con correccion por seleccion)
 
 cat("\n>>> Master terminado sin errores.\n")

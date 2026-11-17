@@ -142,6 +142,25 @@ dif <- list(
 )
 
 # -----------------------------------------------------------------------------
+# 2b. Tobit frente al multietapa normal (filas "1 y 3" de las Tablas IX y X)
+# -----------------------------------------------------------------------------
+# Un estimador es de maxima verosimilitud y el otro multietapa: se usa el caso 3
+# del Apendice 2. La parte del Tobit entra con su influencia BHHH, V g_i, y se
+# cruza con la parte de MC2E del multietapa (funciones en funciones_comunes.R).
+infl_tobit <- function(t) (completar(t) %*% t$V)[, t$sel] * 1000
+tobit_vs_multietapa <- function(t, con_E, signo) {   # signo = +1: Tobit - multietapa
+  me <- influencia(multietapa(todas, con_E, "normal"), nrow(todas), todas$inlf == 1)
+  ti <- infl_tobit(t)
+  Vt <- t$V[t$sel, t$sel] * 1e6
+  Cc <- crossprod(me$a, ti)
+  Vd <- cov_ap2(me, me) + Vt - Cc - t(Cc)
+  d  <- signo * (t$coef - me$b)
+  list(coef = d, se = setNames(sqrt(diag(Vd)), VARS), wald = drop(t(d) %*% solve(Vd) %*% d))
+}
+dif[["IX 3-1"]] <- tobit_vs_multietapa(mod$IX_1, FALSE, -1)  # el paper reporta 3 - 1 en IX
+dif[["X 1-3"]]  <- tobit_vs_multietapa(mod$X_1,  TRUE,  +1)  # y 1 - 3 en X
+
+# -----------------------------------------------------------------------------
 # 3. Comparacion con el paper (Tablas IX, X y XI; seccion 1.7)
 # -----------------------------------------------------------------------------
 paper <- rbind(          # ln(w), ingreso, hijos<6, hijos 6-18 | errores estandar
@@ -153,7 +172,9 @@ paper <- rbind(          # ln(w), ingreso, hijos<6, hijos 6-18 | errores estanda
   "IX 2-1" = c(-106,  15.7,   474,   70,   403,  6.6, 158,  56),
   "X 1-2"  = c(2194,  24.6,   446, -145,   788, 12.8, 237,  95),
   "XI 1"   = c(3837,  14.7,   184,  155,  1153, 16.1, 319, 116),
-  "XI 2"   = c(1748,  -5.8,   156,   78,   579,  7.1, 161,  63)
+  "XI 2"   = c(1748,  -5.8,   156,   78,   579,  7.1, 161,  63),
+  "IX 3-1" = c(-197,  21.8,   853,   -9,   342, 10.0, 413,  46),
+  "X 1-3"  = c(3976, -41.4,  -905,  146,  1120, 18.2, 375, 132)
 )
 todo <- c(mod, dif)
 tabla <- data.frame(
@@ -182,9 +203,10 @@ contrastes <- data.frame(
   z_lnw = round(sapply(dif, function(x) x$coef["lwage"] / x$se["lwage"]), 2),
   z_max = round(apply(zs, 2, max), 2),
   wald_p = round(1 - pchisq(sapply(dif, `[[`, "wald"), 4), 3),
-  rechaza_paper = c(TRUE, TRUE, TRUE, TRUE),
+  rechaza_paper = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE),
   pregunta = c("restricciones del Tobit (sin E)", "restricciones del Tobit (con E)",
-               "experiencia exogena (Tobit)", "experiencia exogena (Tobit cond.)"),
+               "experiencia exogena (Tobit)", "experiencia exogena (Tobit cond.)",
+               "Tobit vs multietapa (sin E)", "Tobit vs multietapa (con E)"),
   row.names = NULL
 )
 cat("\nContrastes: z de ln(w), mayor |z| de los 4 coeficientes y p del Wald conjunto\n")
