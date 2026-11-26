@@ -89,11 +89,19 @@ tobit_conjunto <- function(con_E, exper_en_horas = FALSE, condicional = FALSE) {
 
   ajuste <- maxLik(loglik, start = inicio, method = "BFGS",
                    control = list(iterlim = 5000))
-  # Paso final con BHHH (usa los gradientes por mujer, como Mroz): converge
-  # rapido cerca del maximo y deja el gradiente practicamente en cero.
-  ajuste <- maxLik(loglik, start = coef(ajuste), method = "BHHH",
-                   control = list(tol = 1e-12, reltol = 1e-14, gradtol = 1e-7, iterlim = 500))
+  # Pulido final con BHHH (usa los gradientes por mujer, como Mroz) y, si
+  # hace falta, Newton-Raphson, hasta que el gradiente sea practicamente cero.
+  # Por que el bucle: BFGS se detiene en puntos levemente distintos segun la
+  # computadora (version de R, de maxLik, libreria de algebra lineal). El
+  # maximo es el mismo, pero sin este pulido el gradiente puede quedar cerca
+  # del umbral de control y el script se detenia en otras maquinas.
   p <- coef(ajuste)
+  for (intento in 1:5) {
+    ajuste <- maxLik(loglik, start = p, method = if (intento <= 2) "BHHH" else "NR",
+                     control = list(tol = 1e-12, reltol = 1e-14, gradtol = 1e-7, iterlim = 500))
+    p <- coef(ajuste)
+    if (max(abs(colSums(numericGradient(loglik, p)))) < 1e-3) break
+  }
   G <- numericGradient(loglik, p)             # gradiente por mujer (n x k)
   V <- solve(crossprod(G))                    # BHHH
 
@@ -115,7 +123,16 @@ mod <- list(
   X_2   = tobit_conjunto(con_E = TRUE,  condicional = TRUE),
   Exper = tobit_conjunto(con_E = TRUE,  exper_en_horas = TRUE)
 )
-stopifnot(all(sapply(mod, `[[`, "converge")))
+# Control: cada Tobit debe haber llegado al maximo (gradiente ~ 0). Si alguno
+# no llega, se muestra cual y sus coeficientes antes de detener el script.
+gmax <- sapply(mod, function(m) max(abs(colSums(m$G))))
+if (any(gmax >= 1e-2)) {
+  cat("\nGradiente maximo de cada modelo (debe ser menor que 0.01):\n")
+  print(round(gmax, 5))
+  cat("Coeficientes estimados (horas):\n")
+  print(round(sapply(mod, `[[`, "coef"), 1))
+  stop("Algun Tobit no llego al maximo: arriba se ve cual y sus coeficientes.")
+}
 
 # -----------------------------------------------------------------------------
 # 2. Diferencias entre especificaciones (covarianza cruzada de White, BHHH)
